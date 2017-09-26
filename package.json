@@ -1,0 +1,18 @@
+{
+  "name": "CleverAuth",
+  "version": "0.0.1",
+  "description": "A modular authentication microservice",
+  "main": "index.js",
+  "repository": "https://github.com/clevertech/CleverAuth",
+  "author": "Clevertech (https://clevertech.biz)",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "yarn": ">=1.0.2",
+    "node": ">=6"
+  },
+  "workspaces": [
+    "core",
+    "web"
+  ]
+}

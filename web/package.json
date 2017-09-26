@@ -1,0 +1,18 @@
+{
+  "name": "CleverAuth-web",
+  "version": "0.0.1",
+  "description": "The full-stack auth implementation.  Uses core to provide a microservice complete with login forms and email verification templates",
+  "main": "index.js",
+  "repository": "https://github.com/clevertech/CleverAuth",
+  "author": "Clevertech (https://clevertech.biz)",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "yarn": ">=1.0.2",
+    "node": ">=6"
+  },
+  "workspaces": [
+    "core",
+    "web"
+  ]
+}

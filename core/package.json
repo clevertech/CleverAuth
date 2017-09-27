@@ -1,14 +1,101 @@
 {
-  "name": "CleverAuth-core",
-  "version": "0.0.1",
-  "description": "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
-  "main": "index.js",
-  "repository": "https://github.com/clevertech/CleverAuth",
+  "name": "cleverauth-core",
+  "version": "0.0.0",
+  "description":
+    "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
+  "keywords": [],
+  "main": "dist/library.js",
+  "typings": "dist/types/cleverauth.d.ts",
+  "files": ["dist"],
   "author": "Clevertech (https://clevertech.biz)",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/clevertech/CleverAuth"
+  },
   "license": "MIT",
-  "private": true,
   "engines": {
     "yarn": ">=1.0.2",
     "node": ">=6"
+  },
+  "scripts": {
+    "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
+    "prebuild": "rimraf dist",
+    "build": "tsc && typedoc --out dist/docs --target es6 --theme minimal src",
+    "start": "tsc -w",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:prod": "npm run lint && npm run test -- --coverage --no-cache",
+    "deploy-docs": "ts-node tools/gh-pages-publish",
+    "report-coverage": "cat ./coverage/lcov.info | coveralls",
+    "commit": "git-cz",
+    "semantic-release":
+      "semantic-release pre && npm publish && semantic-release post",
+    "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
+    "precommit": "lint-staged"
+  },
+  "lint-staged": {
+    "{src,test}/**/*.ts": ["prettier --write --no-semi", "git add"]
+  },
+  "config": {
+    "commitizen": {
+      "path": "node_modules/cz-conventional-changelog"
+    },
+    "validate-commit-msg": {
+      "types": "conventional-commit-types",
+      "helpMessage":
+        "Use \"npm run commit\" instead, we use conventional-changelog format :) (https://github.com/commitizen/cz-cli)"
+    }
+  },
+  "jest": {
+    "transform": {
+      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+    },
+    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
+    "moduleFileExtensions": ["ts", "tsx", "js"],
+    "coveragePathIgnorePatterns": ["/node_modules/", "/test/"],
+    "coverageThreshold": {
+      "global": {
+        "branches": 90,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "^20.0.0",
+    "@types/node": "^8.0.0",
+    "commitizen": "^2.9.6",
+    "coveralls": "^2.13.1",
+    "cz-conventional-changelog": "^2.0.0",
+    "husky": "^0.14.0",
+    "jest": "^21.0.0",
+    "lint-staged": "^4.0.0",
+    "prettier": "^1.4.4",
+    "rimraf": "^2.6.1",
+    "semantic-release": "^8.0.0",
+    "ts-jest": "^21.0.0",
+    "ts-node": "^3.0.6",
+    "tslint": "^5.4.3",
+    "tslint-config-prettier": "^1.1.0",
+    "tslint-config-standard": "^6.0.0",
+    "typedoc": "^0.8.0",
+    "typescript": "^2.3.4",
+    "validate-commit-msg": "^2.12.2"
+  },
+  "dependencies": {
+    "@types/joi": "^10.4.3",
+    "@types/jsonwebtoken": "^7.2.3",
+    "@types/knex": "^0.0.61",
+    "@types/lodash": "^4.14.76",
+    "@types/mongodb": "^2.2.11",
+    "@types/uuid": "^3.4.2",
+    "joi": "^11.1.1",
+    "jsonwebtoken": "^8.0.1",
+    "knex": "^0.13.0",
+    "lodash": "^4.17.4",
+    "mongodb": "^2.2.31",
+    "scrypt": "^6.0.3",
+    "uuid": "^3.1.0"
   }
 }

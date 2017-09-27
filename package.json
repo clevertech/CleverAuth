@@ -1,5 +1,5 @@
 {
-  "name": "CleverAuth",
+  "name": "cleverauth-web",
   "version": "0.0.1",
   "description": "A modular authentication microservice",
   "main": "index.js",

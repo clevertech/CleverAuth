@@ -10,7 +10,7 @@ const fieldNames = Object.keys(constants.availableFields)
 const last = (result: any) =>
   Array.isArray(result) ? result[result.length - 1] : result
 
-class KnexAdapter implements IDatabaseAdapter {
+export default class KnexAdapter implements IDatabaseAdapter {
   private db: knex
   private serializeJSON: boolean
 

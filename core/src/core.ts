@@ -1,24 +1,30 @@
 import * as passwords from './utils/passwords'
-import * as querystring from 'querystring'
-
-import { IUser } from './types'
+import { IUser, IUserAgent } from './types'
 import Crypto from './utils/crypto'
 import JWT from './utils/jwt'
 import { IDatabaseAdapter } from './database/adapter'
 import Validations from './validations'
 
-interface IEmailService {
-  sendWelcomeEmail: (user: IUser, agent: IUserAgent) => Promise<void>
+export interface IEmailService {
+  sendWelcomeEmail: (
+    user: IUser,
+    agent: IUserAgent,
+    emailConfirmationToken: string
+  ) => Promise<void>
 
   sendPasswordResetHelpEmail: (
     email: string,
     agent: IUserAgent
   ) => Promise<void>
 
-  sendPasswordResetEmail: (user: IUser, agent: IUserAgent) => Promise<void>
+  sendPasswordResetEmail: (
+    user: IUser,
+    agent: IUserAgent,
+    emailConfirmationToken: string
+  ) => Promise<void>
 }
 
-interface IMediaOptions {
+export interface IMediaOptions {
   localPath?: string
   buffer?: string
   destinationPath?: string
@@ -35,13 +41,11 @@ interface IMediaOptions {
   }
 }
 
-interface IMediaService {
+export interface IMediaService {
   upload: (info: IMediaOptions) => Promise<{ url: string }>
 }
 
-interface ICoreConfig {
-  projectName: string
-  baseUrl: string
+export interface ICoreConfig {
   db: IDatabaseAdapter
   email: IEmailService
   media: IMediaService
@@ -51,18 +55,11 @@ interface ICoreConfig {
   numberOfRecoverCodes?: number
 }
 
-interface IUserRegisterOptions {
+export interface IUserRegisterOptions {
   email: string
   image: string
   password: string
   provider: string
-}
-
-interface IUserAgent {
-  agent: string
-  os: string
-  device: string
-  ip: string
 }
 
 export class CoreError extends Error {
@@ -75,8 +72,6 @@ export class CoreError extends Error {
 }
 
 export default class Core {
-  private projectName: string
-  private baseUrl: string
   private db: IDatabaseAdapter
   private email: IEmailService
   private media: IMediaService
@@ -174,10 +169,10 @@ export default class Core {
       })
     }
 
-    const newUser = await this.db.findUserByEmail(email)
+    const newUser = (await this.db.findUserByEmail(email))!
     // do not await here
-    this.email.sendWelcomeEmail(user, client)
-    return user
+    this.email.sendWelcomeEmail(newUser, client, emailConfirmationToken)
+    return newUser
   }
 
   public async forgotPassword(email: string, client: IUserAgent) {
@@ -193,7 +188,7 @@ export default class Core {
 
     await this.db.updateUser({ id: user.id, emailConfirmationToken })
     // do not wait
-    this.email.sendPasswordResetEmail(user, client)
+    this.email.sendPasswordResetEmail(user, client, emailConfirmationToken)
   }
 
   public async resetPassword(
@@ -252,7 +247,7 @@ export default class Core {
 
   public async useRecoveryCode(userId: string, token: string) {
     const codes = await this.db.findRecoveryCodesByUserId(userId)
-    const decrypted = await this.crypto.decryptRecovery(codes)
+    this.crypto.decryptRecovery(codes)
 
     const toUse = codes.find(code => {
       return code.decrypted!.toUpperCase() === token.toUpperCase() && !code.used
@@ -267,16 +262,6 @@ export default class Core {
 
   private normalizeEmail(email: string) {
     return email.toLowerCase()
-  }
-
-  private userName(user: IUser) {
-    return (
-      user.name ||
-      user.firstName ||
-      user.lastName ||
-      user.username ||
-      user.email.substring(0, user.email.indexOf('@'))
-    )
   }
 
   private createToken() {

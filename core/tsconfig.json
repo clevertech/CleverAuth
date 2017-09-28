@@ -5,7 +5,10 @@
     "lib": ["es2015", "es2016", "es2017", "dom"],
     "strict": true,
     "sourceMap": true,
-    "outDir": "dist"
+    "outDir": "dist",
+    "noUnusedLocals": true,
+    "declaration": true,
+    "declarationDir": "dist/types"
   },
   "include": ["src"]
 }

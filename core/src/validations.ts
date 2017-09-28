@@ -9,8 +9,10 @@ export default class Validations {
   public readonly signupFields: IField[]
   public readonly termsAndConditions: boolean
 
-  constructor(signupFields: IField[], termsAndConditions: boolean) {
+  constructor(signupFields: string[], termsAndConditions: boolean) {
     this.signupFields = signupFields
+      .map(name => availableFields.find(field => field.name === name)!)
+      .filter(Boolean)
     this.termsAndConditions = termsAndConditions
   }
 

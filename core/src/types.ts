@@ -23,3 +23,11 @@ export interface IRecoveryCode {
   decrypted?: string
   used: boolean
 }
+
+export interface IUserAgent {
+  agent: string
+  os: string
+  device: string
+  ip: string
+  language: string
+}

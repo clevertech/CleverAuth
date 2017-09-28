@@ -1,16 +1,16 @@
 import * as jwt from 'jsonwebtoken'
 
 export default class JWT {
-  private defaultOptions: jwt.SignOptions
+  private defaultOptions?: jwt.SignOptions
   private algorithm: string
   private secretOrPrivateKey: string
   private secretOrPublicKey: string
 
   constructor(
-    options: jwt.SignOptions,
     algorithm: string,
     secretOrPrivateKey: string,
-    secretOrPublicKey: string
+    secretOrPublicKey: string,
+    options?: jwt.SignOptions
   ) {
     this.defaultOptions = options
     this.algorithm = algorithm

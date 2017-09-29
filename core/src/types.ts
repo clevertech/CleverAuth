@@ -7,10 +7,13 @@ export interface IUser {
   email: string
   password?: string
   emailConfirmed?: boolean
-  emailConfirmationToken?: string | null
+  emailConfirmationToken?: string
+  twofactor?: string
+  twofactorPhone?: string
+  twofactorSecret?: string
 }
 
-export type IUserUpdate = { [K in keyof IUser]?: IUser[K] }
+export type IUserUpdate = { [K in keyof IUser]?: IUser[K] | null }
 
 export interface IProvider {
   userId: string

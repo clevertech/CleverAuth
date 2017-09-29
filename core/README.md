@@ -9,7 +9,8 @@ import {
   DefaultMediaService,
   Crypto,
   JWT,
-  Validations
+  Validations,
+  TwilioSMSService
 } from '@clevertech/auth-core'
 
 const db = new MongoAdapter('<uri>')
@@ -17,7 +18,14 @@ const db = new KnexAdapter({
   // knex config here
 })
 
+const sms = new TwilioSMSService({
+  accountSid: '',
+  authToken: '',
+  numberFrom: ''
+})
+
 const core = new Core({
+  projectName: '<projectName>',
   db,
   email: new DefaultEmailService({
     projectName: '',
@@ -43,6 +51,7 @@ const core = new Core({
     }
   ),
   validations: new Validations(['name', 'company'], true),
+  sms,
   numberOfRecoverCodes: 10
 })
 ```

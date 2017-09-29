@@ -7,6 +7,7 @@ import DefaultMediaService from './services/media'
 import Crypto from './utils/crypto'
 import JWT from './utils/jwt'
 import Validations from './validations'
+import TwilioSMSService from './services/sms/twilio'
 
 export {
   Core,
@@ -16,5 +17,6 @@ export {
   DefaultMediaService,
   Crypto,
   JWT,
-  Validations
+  Validations,
+  TwilioSMSService
 }

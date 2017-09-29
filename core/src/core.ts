@@ -1,3 +1,6 @@
+import * as speakeasy from 'speakeasy'
+import * as QRCode from 'qrcode'
+
 import * as passwords from './utils/passwords'
 import { IUser, IUserAgent } from './types'
 import Crypto from './utils/crypto'
@@ -24,6 +27,15 @@ export interface IEmailService {
   ) => Promise<void>
 }
 
+export interface ISMSService {
+  send2FAConfigurationToken: (
+    projectName: string,
+    user: IUser,
+    phone: string,
+    token: string
+  ) => void
+}
+
 export interface IMediaOptions {
   localPath?: string
   buffer?: string
@@ -46,12 +58,14 @@ export interface IMediaService {
 }
 
 export interface ICoreConfig {
+  projectName: string
   db: IDatabaseAdapter
   email: IEmailService
   media: IMediaService
   crypto: Crypto
   jwt: JWT
   validations: Validations
+  sms: ISMSService
   numberOfRecoverCodes?: number
 }
 
@@ -72,12 +86,14 @@ export class CoreError extends Error {
 }
 
 export default class Core {
+  private projectName: string
   private db: IDatabaseAdapter
   private email: IEmailService
   private media: IMediaService
   private crypto: Crypto
   private jwt: JWT
   private validations: Validations
+  private sms: ISMSService
   private dumbArray: Array<undefined>
 
   constructor(config: ICoreConfig) {
@@ -258,6 +274,81 @@ export default class Core {
     } else {
       throw new CoreError('RECOVERY_CODE_NOT_FOUND')
     }
+  }
+
+  public async generate2FASecret(user: IUser) {
+    const secret = speakeasy.generateSecret({ name: user.email })
+    return secret.base32
+  }
+
+  public async generate2FAQRCodeURL(user: IUser, twofactorSecret: string) {
+    const url = speakeasy.otpauthURL({
+      secret: twofactorSecret,
+      encoding: 'base32',
+      label: user.email,
+      issuer: this.projectName
+    })
+    return new Promise<string>((resolve, reject) => {
+      QRCode.toDataURL(
+        url,
+        (err, qrCode) => (err ? reject(err) : resolve(qrCode))
+      )
+    })
+  }
+
+  public async configure2FAQR(
+    user: IUser,
+    token: string,
+    twofactorSecret: string
+  ) {
+    const tokenValidates: boolean = (speakeasy.totp as any).verify({
+      secret: twofactorSecret,
+      encoding: 'base32',
+      token,
+      window: 6
+    })
+    if (!tokenValidates) {
+      throw new CoreError('INVALID_AUTHENTICATION_CODE')
+    }
+    const encryptedSecret = await this.crypto.encrypt(twofactorSecret)
+    await this.db.updateUser({
+      id: user.id,
+      twofactor: 'qr',
+      twofactorSecret: encryptedSecret,
+      twofactorPhone: null
+    })
+  }
+
+  public async send2FASMS(user: IUser, twofactorSecret: string, phone: string) {
+    const token = speakeasy.totp({
+      secret: twofactorSecret,
+      encoding: 'base32'
+    })
+    this.sms.send2FAConfigurationToken(this.projectName, user, phone, token)
+  }
+
+  public async configure2FASMS(
+    user: IUser,
+    token: string,
+    twofactorSecret: string,
+    phone: string
+  ) {
+    const tokenValidates: boolean = (speakeasy.totp as any).verify({
+      secret: twofactorSecret,
+      encoding: 'base32',
+      token,
+      window: 6
+    })
+    if (!tokenValidates) {
+      throw new CoreError('INVALID_AUTHENTICATION_CODE')
+    }
+    const encryptedSecret = await this.crypto.encrypt(twofactorSecret)
+    await this.db.updateUser({
+      id: user.id,
+      twofactor: 'sms',
+      twofactorSecret: encryptedSecret,
+      twofactorPhone: phone
+    })
   }
 
   private normalizeEmail(email: string) {

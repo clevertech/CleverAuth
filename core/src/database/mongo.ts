@@ -92,7 +92,7 @@ export default class MongoAdapter implements IDatabaseAdapter {
   public async updateUser(user: IUserUpdate): Promise<void> {
     const res = await this.db
       .collection('auth_users')
-      .update({ _id: new mongo.ObjectID(user.id) }, { $set: omit(user, 'id') })
+      .update({ _id: new mongo.ObjectID(user.id!) }, { $set: omit(user, 'id') })
     return res.result.nModified
   }
 

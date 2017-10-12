@@ -1,13 +1,12 @@
 {
   "name": "@clevertech/auth-core",
   "version": "0.0.0",
-  "description": "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
+  "description":
+    "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
   "keywords": [],
   "main": "dist/library.js",
   "typings": "dist/types/library.d.ts",
-  "files": [
-    "dist"
-  ],
+  "files": ["dist"],
   "author": "Clevertech (https://clevertech.biz)",
   "repository": {
     "type": "git",
@@ -29,15 +28,13 @@
     "deploy-docs": "ts-node tools/gh-pages-publish",
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
     "commit": "git-cz",
-    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
+    "semantic-release":
+      "semantic-release pre && npm publish && semantic-release post",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged"
   },
   "lint-staged": {
-    "{src,test}/**/*.ts": [
-      "prettier --write --no-semi",
-      "git add"
-    ]
+    "{src,test}/**/*.ts": ["prettier --write --no-semi", "git add"]
   },
   "config": {
     "commitizen": {
@@ -45,7 +42,8 @@
     },
     "validate-commit-msg": {
       "types": "conventional-commit-types",
-      "helpMessage": "Use \"npm run commit\" instead, we use conventional-changelog format :) (https://github.com/commitizen/cz-cli)"
+      "helpMessage":
+        "Use \"npm run commit\" instead, we use conventional-changelog format :) (https://github.com/commitizen/cz-cli)"
     }
   },
   "jest": {
@@ -53,15 +51,10 @@
       ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
     },
     "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "/test/"
-    ],
+    "moduleFileExtensions": ["ts", "tsx", "js", "node"],
+    "coveragePathIgnorePatterns": ["/node_modules/", "/test/"],
+    "mapCoverage": true,
+    "collectCoverage": true,
     "coverageThreshold": {
       "global": {
         "branches": 90,

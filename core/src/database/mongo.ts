@@ -21,17 +21,17 @@ export default class MongoAdapter implements IDatabaseAdapter {
     })
   }
 
-  public findUserByEmail(email: string): Promise<IUser | undefined> {
-    return this.db.collection('auth_users').findOne({ email })
+  public async findUserByEmail(email: string): Promise<IUser | undefined> {
+    return this.db.collection('auth_users').findOne({ email }) || undefined
   }
 
-  public findUserByEmailConfirmationToken(
+  public async findUserByEmailConfirmationToken(
     emailConfirmationToken: string
   ): Promise<IUser | undefined> {
     return this.db.collection('auth_users').findOne({ emailConfirmationToken })
   }
 
-  public findUserById(id: string): Promise<IUser | undefined> {
+  public async findUserById(id: string): Promise<IUser | undefined> {
     return this.db
       .collection('auth_users')
       .findOne({ _id: new mongo.ObjectID(id) })

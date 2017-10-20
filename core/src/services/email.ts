@@ -10,24 +10,36 @@ interface IEmailOptions {
   to: string
 }
 
+export type EmailLinkBuilder = ((param: string) => void)
+
 export interface IDefaultEmailServiceConfig {
   emailServiceConfig: any
   projectName: string
-  confirmEmailURL: string
+  confirmEmailURL: string | EmailLinkBuilder
   requestResetPasswordURL: string
-  resetPasswordURL: string
+  resetPasswordURL: string | EmailLinkBuilder
 }
 
 export default class DefaultEmailService implements IEmailService {
   private emailServer: any
   private projectName: string
-  private confirmEmailURL: string
   private requestResetPasswordURL: string
-  private resetPasswordURL: string
+  private confirmEmailURL:  EmailLinkBuilder
+  private resetPasswordURL:  EmailLinkBuilder
 
   constructor(config: IDefaultEmailServiceConfig) {
     this.projectName = config.projectName
     this.emailServer = emailService.startServer(config.emailServiceConfig)
+
+    const linkBuilder = (paramName: string, url: string | EmailLinkBuilder): EmailLinkBuilder => {
+      return (typeof url === 'function') ? url : (paramValue: string) => url +
+      '?' +
+      querystring.stringify({ [paramName]: paramValue })
+    }
+
+    this.confirmEmailURL = linkBuilder('emailConfirmationToken', config.confirmEmailURL)
+    this.resetPasswordURL = linkBuilder('emailConfirmationToken', config.resetPasswordURL)
+    this.requestResetPasswordURL = config.requestResetPasswordURL
   }
 
   public sendWelcomeEmail(
@@ -81,10 +93,7 @@ export default class DefaultEmailService implements IEmailService {
       name: this.userName(user),
       client,
       projectName: this.projectName,
-      link:
-        this.resetPasswordURL +
-        '?' +
-        querystring.stringify({ emailConfirmationToken })
+      link: this.resetPasswordURL(emailConfirmationToken)
     }
     return this.sendEmail({
       templateName: 'password_reset',

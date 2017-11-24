@@ -8,6 +8,10 @@ import JWT from './utils/jwt'
 import { IDatabaseAdapter } from './database/adapter'
 import Validations from './validations'
 
+export interface IEmailOptions {
+  to: string
+}
+
 export interface IEmailService {
   sendWelcomeEmail: (
     user: IUser,
@@ -25,6 +29,13 @@ export interface IEmailService {
     agent: IUserAgent,
     emailConfirmationToken: string
   ) => Promise<void>
+
+  sendEmail: (options: {
+    templateName: string
+    emailOptions: IEmailOptions
+    templateOptions: any
+    language: string
+  }) => Promise<void>
 }
 
 export interface ISMSService {

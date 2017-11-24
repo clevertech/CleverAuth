@@ -1,14 +1,10 @@
 import * as querystring from 'querystring'
 import fetch from 'node-fetch'
 
-import { IEmailService } from '../core'
+import { IEmailOptions, IEmailService } from '../core'
 import { IUser, IUserAgent } from '../types'
 
 const emailService = require('pnp-email-service')
-
-interface IEmailOptions {
-  to: string
-}
 
 export type EmailLinkBuilder = ((param: string) => void)
 
@@ -103,7 +99,7 @@ export default class DefaultEmailService implements IEmailService {
     })
   }
 
-  private async sendEmail(options: {
+  public async sendEmail(options: {
     templateName: string
     emailOptions: IEmailOptions
     templateOptions: any

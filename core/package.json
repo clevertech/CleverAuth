@@ -28,16 +28,15 @@
     "deploy-docs": "ts-node tools/gh-pages-publish",
     "report-coverage": "cat ./coverage/lcov.info | coveralls",
     "commit": "git-cz",
-    "semantic-release":
-      "semantic-release pre && npm publish && semantic-release post",
+    "semantic-release": "semantic-release pre && npm publish && semantic-release post",
     "semantic-release-prepare": "ts-node tools/semantic-release-prepare",
     "precommit": "lint-staged"
   },
   "lint-staged": {
     "gitDir": "../",
     "linters": {
-      "{src,test}/**/*.ts": ["prettier --write --no-semi", "git add"],
-      "*.json": ["prettier --write --no-semi", "git add"]
+      "{src,test}/**/*.ts": ["prettier", "git add"],
+      "*.json": ["prettier", "git add"]
     }
   },
   "config": {
@@ -52,10 +51,10 @@
   },
   "jest": {
     "transform": {
-      ".(ts|tsx)": "<rootDir>/node_modules/ts-jest/preprocessor.js"
+      "^.+\\.tsx?$": "ts-jest"
     },
-    "testRegex": "(/__tests__/.*|\\.(test|spec))\\.(ts|tsx|js)$",
-    "moduleFileExtensions": ["ts", "tsx", "js", "node"],
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
     "coveragePathIgnorePatterns": ["/node_modules/", "/test/"],
     "mapCoverage": true,
     "collectCoverage": true,
@@ -69,18 +68,20 @@
     }
   },
   "devDependencies": {
-    "@types/jest": "^20.0.0",
+    "@types/jest": "^22.0.1",
     "@types/node": "^8.0.0",
     "commitizen": "^2.9.6",
     "coveralls": "^2.13.1",
     "cz-conventional-changelog": "^2.0.0",
     "husky": "^0.14.0",
-    "jest": "^21.0.0",
+    "jest": "^22.0.4",
     "lint-staged": "^4.0.0",
-    "prettier": "^1.4.4",
+    "mysql": "^2.15.0",
+    "pg": "^7.4.0",
+    "prettier": "^1.9.2",
     "rimraf": "^2.6.1",
     "semantic-release": "^8.0.0",
-    "ts-jest": "^21.0.0",
+    "ts-jest": "^22.0.0",
     "ts-node": "^3.0.6",
     "tslint": "^5.4.3",
     "tslint-config-prettier": "^1.1.0",

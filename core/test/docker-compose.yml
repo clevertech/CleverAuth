@@ -1,0 +1,26 @@
+version: '2'
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: cleverauth-test
+      POSTGRES_USER: cleverauth-test
+      POSTGRES_DB: cleverauth-test
+    ports:
+      - '5432:5432'
+  mysql:
+    image: mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: cleverauth-test
+      MYSQL_PASSWORD: cleverauth-test
+      MYSQL_DATABASE: cleverauth-test
+      MYSQL_USER: cleverauth-test
+    ports:
+      - '3306:3306'
+  mongo:
+    image: mongo
+    restart: always
+    ports:
+      - '27017:27017'

@@ -17,38 +17,37 @@ export default class MongoAdapter implements IDatabaseAdapter {
       mongo.MongoClient.connect(this.databaseURL, (err, connection) => {
         if (err) return reject(err)
         this.db = connection
+        resolve()
       })
     })
   }
 
   public async findUserByEmail(email: string): Promise<IUser | undefined> {
-    return this.db.collection('auth_users').findOne({ email }) || undefined
+    return this.normalize(await this.db.collection('auth_users').findOne({ email }))
   }
 
   public async findUserByEmailConfirmationToken(
     emailConfirmationToken: string
   ): Promise<IUser | undefined> {
-    return this.db.collection('auth_users').findOne({ emailConfirmationToken })
+    return this.normalize(
+      await this.db.collection('auth_users').findOne({ emailConfirmationToken })
+    )
   }
 
   public async findUserById(id: string): Promise<IUser | undefined> {
-    return this.db
-      .collection('auth_users')
-      .findOne({ _id: new mongo.ObjectID(id) })
+    return this.normalize(
+      await this.db.collection('auth_users').findOne({ _id: new mongo.ObjectID(id) })
+    )
   }
 
-  public async findUserByProviderLogin(
-    login: string
-  ): Promise<IUser | undefined> {
-    const provider = await this.db
-      .collection('auth_providers')
-      .findOne({ login })
+  public async findUserByProviderLogin(login: string): Promise<IUser | undefined> {
+    const provider = await this.db.collection('auth_providers').findOne({ login })
     if (!provider) {
       return undefined
     }
-    return this.db
-      .collection('auth_users')
-      .findOne({ _id: new mongo.ObjectID(provider.userId) })
+    return this.normalize(
+      await this.db.collection('auth_users').findOne({ _id: new mongo.ObjectID(provider.userId) })
+    )
   }
 
   public findRecoveryCodesByUserId(userId: string): Promise<IRecoveryCode[]> {
@@ -58,17 +57,12 @@ export default class MongoAdapter implements IDatabaseAdapter {
       .toArray()
   }
 
-  public async insertRecoveryCodes(
-    userId: string,
-    codes: string[]
-  ): Promise<IRecoveryCode[]> {
+  public async insertRecoveryCodes(userId: string, codes: string[]): Promise<IRecoveryCode[]> {
     await this.db.collection('auth_recovery_codes').deleteMany({ userId })
 
     await Promise.all(
       codes.map(code => {
-        return this.db
-          .collection('auth_recovery_codes')
-          .insertOne({ userId, code, used: false })
+        return this.db.collection('auth_recovery_codes').insertOne({ userId, code, used: false })
       })
     )
     return codes.map(code => ({ code, used: false }))
@@ -77,15 +71,12 @@ export default class MongoAdapter implements IDatabaseAdapter {
   public async useRecoveryCode(userId: string, code: string): Promise<boolean> {
     const res = await this.db
       .collection('auth_recovery_codes')
-      .updateOne(
-        { userId, code: code.toLowerCase(), used: false },
-        { $set: { used: true } }
-      )
+      .updateOne({ userId, code: code.toLowerCase(), used: false }, { $set: { used: true } })
     return !!res.result.nModified
   }
 
   public async insertUser(user: IUser): Promise<string> {
-    const res = await this.db.collection('auth_users').insert(user)
+    const res = await this.db.collection('auth_users').insertOne(user)
     return res.insertedId.toHexString()
   }
 
@@ -97,7 +88,15 @@ export default class MongoAdapter implements IDatabaseAdapter {
   }
 
   public async insertProvider(provider: IProvider): Promise<void> {
-    await this.db.collection('auth_providers').insert(provider)
+    await this.db.collection('auth_providers').insertOne(provider)
     // return res.insertedId.toHexString()
+  }
+
+  private normalize(obj: any) {
+    const id = obj._id
+    if (!id) return obj
+    delete obj._id
+    obj.id = id.toHexString()
+    return obj
   }
 }

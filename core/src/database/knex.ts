@@ -1,21 +1,30 @@
 import * as knex from 'knex'
 import * as uuid from 'uuid/v4'
-import { once, omit } from 'lodash'
+import { once, omit, clone } from 'lodash'
 
-import { IUser, IProvider, IRecoveryCode } from '../types'
+import { IUser, IProvider, IRecoveryCode, IUserUpdate } from '../types'
 import { IDatabaseAdapter } from './adapter'
 import * as constants from '../constants'
 
 const fieldNames = Object.keys(constants.availableFields)
-const last = (result: any) =>
-  Array.isArray(result) ? result[result.length - 1] : result
+const last = (result: any) => (Array.isArray(result) ? result[result.length - 1] : result)
 
 export default class KnexAdapter implements IDatabaseAdapter {
   private db: knex
   private serializeJSON: boolean
 
   constructor(config: knex.Config) {
-    this.db = knex(config)
+    const cloned = clone(config)
+    if (config.client === 'mysql') {
+      ;(config.connection as any).typeCast = (field: any, next: any) => {
+        // Retrieve booleans from mysql
+        if (field.type === 'TINY' && field.length === 1) {
+          return field.string() === '1' // 1 = true, 0 = false
+        }
+        return next()
+      }
+    }
+    this.db = knex(cloned)
     this.serializeJSON = config.client === 'mysql'
   }
 
@@ -119,12 +128,8 @@ export default class KnexAdapter implements IDatabaseAdapter {
           )
     })
 
-    await this.addColumn('auth_users', 'twofactorSecret', table =>
-      table.string('twofactorSecret')
-    )
-    await this.addColumn('auth_users', 'twofactorPhone', table =>
-      table.string('twofactorPhone')
-    )
+    await this.addColumn('auth_users', 'twofactorSecret', table => table.string('twofactorSecret'))
+    await this.addColumn('auth_users', 'twofactorPhone', table => table.string('twofactorPhone'))
   }
 
   async findUserByEmail(email: string): Promise<IUser | undefined> {
@@ -159,10 +164,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
     return this.db('auth_recovery_codes').where({ userId })
   }
 
-  async insertRecoveryCodes(
-    userId: string,
-    codes: string[]
-  ): Promise<IRecoveryCode[]> {
+  async insertRecoveryCodes(userId: string, codes: string[]): Promise<IRecoveryCode[]> {
     await this.db.transaction(trx => {
       return this.db('auth_recovery_codes')
         .where({ userId })
@@ -203,7 +205,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
       })
   }
 
-  async updateUser(user: IUser): Promise<void> {
+  async updateUser(user: IUserUpdate): Promise<void> {
     return this.db('auth_users')
       .where('id', '=', user.id!)
       .update(user)
@@ -216,10 +218,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
     return this.db('auth_providers').insert(provider)
   }
 
-  private createTableIfNotExists(
-    tableName: string,
-    callback: (table: knex.TableBuilder) => void
-  ) {
+  private createTableIfNotExists(tableName: string, callback: (table: knex.TableBuilder) => void) {
     callback = once(callback)
     return this.db.schema.hasTable(tableName).then(tableExists => {
       return this.db.schema.createTableIfNotExists(
@@ -239,10 +238,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
       .then(exists => !exists && this.alterTable(table, callback))
   }
 
-  private alterTable(
-    table: string,
-    callback: (t: knex.AlterTableBuilder) => void
-  ) {
+  private alterTable(table: string, callback: (t: knex.AlterTableBuilder) => void) {
     return (this.db.schema as any).alterTable(table, once(callback))
   }
 }

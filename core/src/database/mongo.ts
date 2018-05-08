@@ -1,8 +1,7 @@
-import { IUser, IRecoveryCode, IProvider, IUserUpdate } from '../types'
-import { IDatabaseAdapter } from './adapter'
-
-import * as mongo from 'mongodb'
 import { omit } from 'lodash'
+import * as mongo from 'mongodb'
+import { IProvider, IRecoveryCode, IUser, IUserUpdate } from '../types'
+import { IDatabaseAdapter } from './adapter'
 
 export default class MongoAdapter implements IDatabaseAdapter {
   private databaseURL: string
@@ -93,6 +92,7 @@ export default class MongoAdapter implements IDatabaseAdapter {
   }
 
   private normalize(obj: any) {
+    if (!obj) return obj
     const id = obj._id
     if (!id) return obj
     delete obj._id

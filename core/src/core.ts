@@ -1,12 +1,12 @@
-import * as speakeasy from 'speakeasy'
-import * as QRCode from 'qrcode'
+import * as QRCode from 'qrcode';
+import * as speakeasy from 'speakeasy';
+import { IDatabaseAdapter } from './database/adapter';
+import { IUser, IUserAgent } from './types';
+import Crypto from './utils/crypto';
+import JWT from './utils/jwt';
+import * as passwords from './utils/passwords';
+import Validations from './validations';
 
-import * as passwords from './utils/passwords'
-import { IUser, IUserAgent } from './types'
-import Crypto from './utils/crypto'
-import JWT from './utils/jwt'
-import { IDatabaseAdapter } from './database/adapter'
-import Validations from './validations'
 
 export interface IEmailOptions {
   to: string
@@ -146,7 +146,7 @@ export default class Core {
     delete params.provider
     if (!params.image) delete params.image // removes empty strings
     const emailConfirmationToken = await this.createToken()
-    const exists = this.db.findUserByEmail(email)
+    const exists = await this.db.findUserByEmail(email)
     if (exists) {
       throw new CoreError('USER_ALREADY_EXISTS')
     }

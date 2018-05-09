@@ -1,6 +1,5 @@
-import * as querystring from 'querystring'
 import fetch from 'node-fetch'
-
+import * as querystring from 'querystring'
 import { IEmailOptions, IEmailService } from '../core'
 import { IUser, IUserAgent } from '../types'
 
@@ -11,26 +10,26 @@ export type EmailLinkBuilder = ((param: string) => void)
 export interface IDefaultEmailServiceConfig {
   emailServiceConfig: any
   projectName: string
-  confirmEmailURL: string | EmailLinkBuilder
+  confirmEmailURL: string | EmailLinkBuilder
   requestResetPasswordURL: string
-  resetPasswordURL: string | EmailLinkBuilder
+  resetPasswordURL: string | EmailLinkBuilder
 }
 
 export default class DefaultEmailService implements IEmailService {
   private emailServer: any
   private projectName: string
   private requestResetPasswordURL: string
-  private confirmEmailURL:  EmailLinkBuilder
-  private resetPasswordURL:  EmailLinkBuilder
+  private confirmEmailURL: EmailLinkBuilder
+  private resetPasswordURL: EmailLinkBuilder
 
   constructor(config: IDefaultEmailServiceConfig) {
     this.projectName = config.projectName
     this.emailServer = emailService.startServer(config.emailServiceConfig)
 
-    const linkBuilder = (paramName: string, url: string | EmailLinkBuilder): EmailLinkBuilder => {
-      return (typeof url === 'function') ? url : (paramValue: string) => url +
-      '?' +
-      querystring.stringify({ [paramName]: paramValue })
+    const linkBuilder = (paramName: string, url: string | EmailLinkBuilder): EmailLinkBuilder => {
+      return typeof url === 'function'
+        ? url
+        : (paramValue: string) => url + '?' + querystring.stringify({ [paramName]: paramValue })
     }
 
     this.confirmEmailURL = linkBuilder('emailConfirmationToken', config.confirmEmailURL)
@@ -48,10 +47,7 @@ export default class DefaultEmailService implements IEmailService {
       name: this.userName(user),
       client,
       projectName: this.projectName,
-      link:
-        this.confirmEmailURL +
-        '?' +
-        querystring.stringify({ emailConfirmationToken })
+      link: this.confirmEmailURL(emailConfirmationToken)
     }
     return this.sendEmail({
       templateName: 'welcome',
@@ -61,10 +57,7 @@ export default class DefaultEmailService implements IEmailService {
     })
   }
 
-  public async sendPasswordResetHelpEmail(
-    email: string,
-    client: IUserAgent
-  ): Promise<void> {
+  public async sendPasswordResetHelpEmail(email: string, client: IUserAgent): Promise<void> {
     const templateOptions = {
       emailAddress: email,
       client,

@@ -1,12 +1,11 @@
-import * as QRCode from 'qrcode';
-import * as speakeasy from 'speakeasy';
-import { IDatabaseAdapter } from './database/adapter';
-import { IUser, IUserAgent } from './types';
-import Crypto from './utils/crypto';
-import JWT from './utils/jwt';
-import * as passwords from './utils/passwords';
-import Validations from './validations';
-
+import * as QRCode from 'qrcode'
+import * as speakeasy from 'speakeasy'
+import { IDatabaseAdapter } from './database/adapter'
+import { IUser, IUserAgent } from './types'
+import Crypto from './utils/crypto'
+import JWT from './utils/jwt'
+import * as passwords from './utils/passwords'
+import Validations from './validations'
 
 export interface IEmailOptions {
   to: string
@@ -19,10 +18,7 @@ export interface IEmailService {
     emailConfirmationToken: string
   ) => Promise<void>
 
-  sendPasswordResetHelpEmail: (
-    email: string,
-    agent: IUserAgent
-  ) => Promise<void>
+  sendPasswordResetHelpEmail: (email: string, agent: IUserAgent) => Promise<void>
 
   sendPasswordResetEmail: (
     user: IUser,
@@ -30,12 +26,14 @@ export interface IEmailService {
     emailConfirmationToken: string
   ) => Promise<void>
 
-  sendEmail: (options: {
-    templateName: string
-    emailOptions: IEmailOptions
-    templateOptions: any
-    language: string
-  }) => Promise<void>
+  sendEmail: (
+    options: {
+      templateName: string
+      emailOptions: IEmailOptions
+      templateOptions: any
+      language: string
+    }
+  ) => Promise<void>
 }
 
 export interface ISMSService {
@@ -112,11 +110,7 @@ export default class Core {
     this.dumbArray = Array(config.numberOfRecoverCodes || 10)
   }
 
-  public async login(
-    email: string,
-    password: string,
-    client?: any
-  ): Promise<IUser | undefined> {
+  public async login(email: string, password: string, client?: any): Promise<IUser | undefined> {
     email = this.normalizeEmail(email)
     const user = await this.db.findUserByEmail(email)
     // If the user does not exist, use the check function anyways
@@ -218,11 +212,7 @@ export default class Core {
     this.email.sendPasswordResetEmail(user, client, emailConfirmationToken)
   }
 
-  public async resetPassword(
-    token: string,
-    password: string,
-    client: IUserAgent
-  ) {
+  public async resetPassword(token: string, password: string, client: IUserAgent) {
     const user = await this.db.findUserByEmailConfirmationToken(token)
     if (!user) {
       throw new CoreError('EMAIL_CONFIRMATION_TOKEN_NOT_FOUND')
@@ -237,11 +227,7 @@ export default class Core {
     })
   }
 
-  public async changePassword(
-    id: string,
-    oldPassword: string,
-    newPassword: string
-  ) {
+  public async changePassword(id: string, oldPassword: string, newPassword: string) {
     const user = await this.db.findUserById(id)
     if (!user) {
       throw new CoreError('USER_NOT_FOUND')
@@ -259,7 +245,7 @@ export default class Core {
     })
   }
 
-  public async confirmEmail(token: string, password: string) {
+  public async confirmEmail(token: string) {
     const user = await this.db.findUserByEmailConfirmationToken(token)
     if (!user) {
       throw new CoreError('EMAIL_CONFIRMATION_TOKEN_NOT_FOUND')
@@ -300,18 +286,11 @@ export default class Core {
       issuer: this.projectName
     })
     return new Promise<string>((resolve, reject) => {
-      QRCode.toDataURL(
-        url,
-        (err, qrCode) => (err ? reject(err) : resolve(qrCode))
-      )
+      QRCode.toDataURL(url, (err, qrCode) => (err ? reject(err) : resolve(qrCode)))
     })
   }
 
-  public async configure2FAQR(
-    user: IUser,
-    token: string,
-    twofactorSecret: string
-  ) {
+  public async configure2FAQR(user: IUser, token: string, twofactorSecret: string) {
     const tokenValidates: boolean = (speakeasy.totp as any).verify({
       secret: twofactorSecret,
       encoding: 'base32',
@@ -338,12 +317,7 @@ export default class Core {
     this.sms.send2FAConfigurationToken(this.projectName, user, phone, token)
   }
 
-  public async configure2FASMS(
-    user: IUser,
-    token: string,
-    twofactorSecret: string,
-    phone: string
-  ) {
+  public async configure2FASMS(user: IUser, token: string, twofactorSecret: string, phone: string) {
     const tokenValidates: boolean = (speakeasy.totp as any).verify({
       secret: twofactorSecret,
       encoding: 'base32',

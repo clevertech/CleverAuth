@@ -336,6 +336,18 @@ export default class Core {
     })
   }
 
+  public validate2FAToken(user: IUser, token: string) {
+    const tokenValidates: boolean = (speakeasy.totp as any).verify({
+      secret: user.twofactorSecret,
+      encoding: 'base32',
+      token,
+      window: 6
+    })
+    if (!tokenValidates) {
+      throw new CoreError('INVALID_AUTHENTICATION_CODE')
+    }
+  }
+
   private normalizeEmail(email: string) {
     return email.toLowerCase()
   }

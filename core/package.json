@@ -1,6 +1,6 @@
 {
   "name": "@clevertech.biz/auth-core",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description":
     "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
   "keywords": [],

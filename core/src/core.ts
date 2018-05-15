@@ -336,9 +336,12 @@ export default class Core {
     })
   }
 
-  public validate2FAToken(user: IUser, token: string) {
+  public async validate2FAToken(userId: string, token: string) {
+    const freshUser = await this.db.findUserById(userId)
+    if (!freshUser) throw new CoreError('USER_NOT_FOUND')
+    const secret = await this.crypto.decrypt(freshUser.twofactorSecret || '')
     const tokenValidates: boolean = (speakeasy.totp as any).verify({
-      secret: user.twofactorSecret,
+      secret,
       encoding: 'base32',
       token,
       window: 6
@@ -346,6 +349,7 @@ export default class Core {
     if (!tokenValidates) {
       throw new CoreError('INVALID_AUTHENTICATION_CODE')
     }
+    return freshUser
   }
 
   private normalizeEmail(email: string) {

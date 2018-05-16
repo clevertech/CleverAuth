@@ -1,11 +1,11 @@
-import * as QRCode from 'qrcode'
-import * as speakeasy from 'speakeasy'
-import { IDatabaseAdapter } from './database/adapter'
-import { IUser, IUserAgent } from './types'
-import Crypto from './utils/crypto'
-import JWT from './utils/jwt'
-import * as passwords from './utils/passwords'
-import Validations from './validations'
+import * as QRCode from 'qrcode';
+import * as speakeasy from 'speakeasy';
+import { IDatabaseAdapter } from './database/adapter';
+import { IUser, IUserAgent } from './types';
+import Crypto from './utils/crypto';
+import JWT from './utils/jwt';
+import * as passwords from './utils/passwords';
+import Validations from './validations';
 
 export interface IEmailOptions {
   to: string
@@ -113,14 +113,7 @@ export default class Core {
   public async login(email: string, password: string, client?: any): Promise<IUser | undefined> {
     email = this.normalizeEmail(email)
     const user = await this.db.findUserByEmail(email)
-    // If the user does not exist, use the check function anyways
-    // to avoid timing attacks.
-    // See https://en.wikipedia.org/wiki/Timing_attack
-    const ok = await passwords.check(
-      email,
-      password,
-      (user && user.password) || (await passwords.invalidHash())
-    )
+    const ok = await passwords.check(email, password, user && user.password)
     if (!ok) {
       throw new CoreError('INVALID_CREDENTIALS')
     }
@@ -245,6 +238,19 @@ export default class Core {
     })
   }
 
+  public async changeEmail(id: string, password: string, newEmail: string) {
+    const user = await this.db.findUserById(id)
+    if (!user) {
+      throw new CoreError('USER_NOT_FOUND')
+    }
+    const ok = await passwords.check(user.email!, password, user.password!)
+    if (!ok) {
+      throw new CoreError('INVALID_CREDENTIALS')
+    }
+
+    throw new CoreError('NOT_IMPLEMENTED')
+  }
+
   public async confirmEmail(token: string) {
     const user = await this.db.findUserByEmailConfirmationToken(token)
     if (!user) {
@@ -336,10 +342,10 @@ export default class Core {
     })
   }
 
-  public async validate2FAToken(userId: string, token: string) {
-    const freshUser = await this.db.findUserById(userId)
-    if (!freshUser) throw new CoreError('USER_NOT_FOUND')
-    const secret = await this.crypto.decrypt(freshUser.twofactorSecret || '')
+  public async validate2FAToken(id: string, token: string) {
+    const user = await this.db.findUserById(id)
+    if (!user) throw new CoreError('USER_NOT_FOUND')
+    const secret = await this.crypto.decrypt(user.twofactorSecret || '')
     const tokenValidates: boolean = (speakeasy.totp as any).verify({
       secret,
       encoding: 'base32',
@@ -349,7 +355,29 @@ export default class Core {
     if (!tokenValidates) {
       throw new CoreError('INVALID_AUTHENTICATION_CODE')
     }
-    return freshUser
+    return user
+  }
+
+  public async disable2FA(id: string, password: string) {
+    const user = await this.db.findUserById(id)
+    if (!user) throw new CoreError('USER_NOT_FOUND')
+    const ok = await passwords.check(user.email, password, user.password)
+    if (!ok) {
+      throw new CoreError('INVALID_CREDENTIALS')
+    }
+    await this.db.updateUser({
+      id: user.id,
+      twofactor: null,
+      twofactorSecret: null,
+      twofactorPhone: null
+    })
+  }
+
+  public async get2FAStatus(id: string) {
+    const user = await this.db.findUserById(id)
+    if (!user) throw new CoreError('USER_NOT_FOUND')
+    const { twofactor, twofactorPhone } = user
+    return { twofactor, twofactorPhone }
   }
 
   private normalizeEmail(email: string) {

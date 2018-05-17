@@ -1,11 +1,11 @@
-import * as QRCode from 'qrcode';
-import * as speakeasy from 'speakeasy';
-import { IDatabaseAdapter } from './database/adapter';
-import { IUser, IUserAgent } from './types';
-import Crypto from './utils/crypto';
-import JWT from './utils/jwt';
-import * as passwords from './utils/passwords';
-import Validations from './validations';
+import * as QRCode from 'qrcode'
+import * as speakeasy from 'speakeasy'
+import { IDatabaseAdapter } from './database/adapter'
+import { IUser, IUserAgent } from './types'
+import Crypto from './utils/crypto'
+import JWT from './utils/jwt'
+import * as passwords from './utils/passwords'
+import Validations from './validations'
 
 export interface IEmailOptions {
   to: string
@@ -103,11 +103,11 @@ export default class Core {
   private jwt: JWT
   private validations: Validations
   private sms: ISMSService
-  private dumbArray: Array<undefined>
+  private dumbArray: Array<string>
 
   constructor(config: ICoreConfig) {
     Object.assign(this, config)
-    this.dumbArray = Array(config.numberOfRecoverCodes || 10)
+    this.dumbArray = Array(config.numberOfRecoverCodes || 10).fill('')
   }
 
   public async login(email: string, password: string, client?: any): Promise<IUser | undefined> {
@@ -118,13 +118,6 @@ export default class Core {
       throw new CoreError('INVALID_CREDENTIALS')
     }
     return user
-  }
-
-  public async createRecoveryCodes(user: IUser) {
-    const codes = await Promise.all(
-      this.dumbArray.map(() => this.crypto.encrypt(this.crypto.random(4)))
-    )
-    this.db.insertRecoveryCodes(user.id!, codes)
   }
 
   public async register(params: IUserRegisterOptions, client: IUserAgent) {
@@ -266,10 +259,10 @@ export default class Core {
 
   public async useRecoveryCode(userId: string, token: string) {
     const codes = await this.db.findRecoveryCodesByUserId(userId)
-    this.crypto.decryptRecovery(codes)
+    await this.crypto.decryptRecovery(codes)
 
     const toUse = codes.find(code => {
-      return code.decrypted!.toUpperCase() === token.toUpperCase() && !code.used
+      return !code.used && code.decrypted!.toUpperCase() === token.toUpperCase()
     })
 
     if (toUse) {
@@ -313,6 +306,7 @@ export default class Core {
       twofactorSecret: encryptedSecret,
       twofactorPhone: null
     })
+    return this.createRecoveryCodes(user)
   }
 
   public async send2FASMS(user: IUser, twofactorSecret: string, phone: string) {
@@ -340,20 +334,30 @@ export default class Core {
       twofactorSecret: encryptedSecret,
       twofactorPhone: phone
     })
+    return this.createRecoveryCodes(user)
   }
 
   public async validate2FAToken(id: string, token: string) {
     const user = await this.db.findUserById(id)
     if (!user) throw new CoreError('USER_NOT_FOUND')
-    const secret = await this.crypto.decrypt(user.twofactorSecret || '')
-    const tokenValidates: boolean = (speakeasy.totp as any).verify({
-      secret,
-      encoding: 'base32',
-      token,
-      window: 6
-    })
-    if (!tokenValidates) {
-      throw new CoreError('INVALID_AUTHENTICATION_CODE')
+    if (token.length > 6) {
+      // it's a recovery code
+      const used = await this.db.useRecoveryCode(id, token)
+      if (!used) {
+        throw new CoreError('INVALID_AUTHENTICATION_CODE')
+      }
+    } else {
+      // it's an OTP
+      const secret = await this.crypto.decrypt(user.twofactorSecret || '')
+      const tokenValidates: boolean = (speakeasy.totp as any).verify({
+        secret,
+        encoding: 'base32',
+        token,
+        window: 6
+      })
+      if (!tokenValidates) {
+        throw new CoreError('INVALID_AUTHENTICATION_CODE')
+      }
     }
     return user
   }
@@ -386,5 +390,12 @@ export default class Core {
 
   private createToken() {
     return this.jwt.sign({ code: this.crypto.random() }, { expiresIn: '24h' })
+  }
+
+  private async createRecoveryCodes(user: IUser) {
+    const codes = this.dumbArray.map(() => this.crypto.random(4))
+    const encrypted = await Promise.all(codes.map(code => this.crypto.encrypt(code)))
+    await this.db.insertRecoveryCodes(user.id!, encrypted)
+    return codes
   }
 }

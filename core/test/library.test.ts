@@ -1,15 +1,3 @@
-import {
-  Core,
-  KnexAdapter,
-  MongoAdapter,
-  DefaultEmailService,
-  DefaultMediaService,
-  Crypto,
-  JWT,
-  Validations
-} from '../src/library'
-
-
 /**
  * Dummy test
  */

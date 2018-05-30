@@ -1,13 +1,9 @@
-import { IUser, IUserUpdate, IProvider, IRecoveryCode } from '../types'
+import { IProvider, IRecoveryCode, IUser, IUserUpdate } from '../types';
 
 export interface IDatabaseAdapter {
   init: () => Promise<void>
 
   findUserByEmail: (email: string) => Promise<IUser | undefined>
-
-  findUserByEmailConfirmationToken: (
-    emailConfirmationToken: string
-  ) => Promise<IUser | undefined>
 
   findUserById: (id: string) => Promise<IUser | undefined>
 

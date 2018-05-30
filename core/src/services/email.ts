@@ -72,6 +72,27 @@ export default class DefaultEmailService implements IEmailService {
     })
   }
 
+  public async sendChangeEmailEmail(
+    user: IUser,
+    email: string,
+    emailConfirmationToken: string,
+    client: IUserAgent
+  ): Promise<void> {
+    const templateOptions = {
+      user,
+      name: this.userName(user),
+      client,
+      projectName: this.projectName,
+      link: this.confirmEmailURL(emailConfirmationToken)
+    }
+    return this.sendEmail({
+      templateName: 'change_email',
+      emailOptions: { to: email },
+      templateOptions,
+      language: client.language
+    })
+  }
+
   public async sendPasswordResetEmail(
     user: IUser,
     client: IUserAgent,

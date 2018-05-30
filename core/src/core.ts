@@ -7,6 +7,11 @@ import JWT from './utils/jwt'
 import * as passwords from './utils/passwords'
 import Validations from './validations'
 
+enum TokenIntent {
+  ConfirmEmail = 'CONFIRM_EMAIL',
+  ForgotPassword = 'FORGOT_PASSWORD'
+}
+
 export interface IEmailOptions {
   to: string
 }
@@ -24,6 +29,13 @@ export interface IEmailService {
     user: IUser,
     agent: IUserAgent,
     emailConfirmationToken: string
+  ) => Promise<void>
+
+  sendChangeEmailEmail: (
+    user: IUser,
+    email: string,
+    emailConfirmationToken: string,
+    agent: IUserAgent
   ) => Promise<void>
 
   sendEmail: (
@@ -45,32 +57,10 @@ export interface ISMSService {
   ) => void
 }
 
-export interface IMediaOptions {
-  localPath?: string
-  buffer?: string
-  destinationPath?: string
-  contentType?: string
-  expires?: number
-  imageOperations?: {
-    width?: number
-    height?: number
-    resize?: string
-    autoRotate?: boolean
-    normalize?: boolean
-    appendExtension?: boolean
-    grayscale?: boolean
-  }
-}
-
-export interface IMediaService {
-  upload: (info: IMediaOptions) => Promise<{ url: string }>
-}
-
 export interface ICoreConfig {
   projectName: string
   db: IDatabaseAdapter
   email: IEmailService
-  media: IMediaService
   crypto: Crypto
   jwt: JWT
   validations: Validations
@@ -98,7 +88,6 @@ export default class Core {
   private projectName: string
   private db: IDatabaseAdapter
   private email: IEmailService
-  private media: IMediaService
   private crypto: Crypto
   private jwt: JWT
   private validations: Validations
@@ -106,7 +95,13 @@ export default class Core {
   private dumbArray: Array<string>
 
   constructor(config: ICoreConfig) {
-    Object.assign(this, config)
+    this.projectName = config.projectName
+    this.db = config.db
+    this.email = config.email
+    this.crypto = config.crypto
+    this.jwt = config.jwt
+    this.validations = config.validations
+    this.sms = config.sms
     this.dumbArray = Array(config.numberOfRecoverCodes || 10).fill('')
   }
 
@@ -125,7 +120,6 @@ export default class Core {
     const { provider } = params
     delete params.provider
     if (!params.image) delete params.image // removes empty strings
-    const emailConfirmationToken = await this.createToken()
     const exists = await this.db.findUserByEmail(email)
     if (exists) {
       throw new CoreError('USER_ALREADY_EXISTS')
@@ -148,25 +142,9 @@ export default class Core {
     }
     const user = validation.value
 
-    if (user.image) {
-      const response = await this.media.upload({
-        buffer: user.image,
-        destinationPath: 'user-' + Date.now(),
-        imageOperations: {
-          width: 160,
-          height: 160,
-          autoRotate: true,
-          appendExtension: true
-        }
-      })
-      user.image = response.url
-    }
-
-    const id = await this.db.insertUser(
-      Object.assign({}, user, {
-        emailConfirmationToken
-      })
-    )
+    const id = await this.db.insertUser(user)
+    const emailConfirmationToken = await this.createToken(TokenIntent.ConfirmEmail, user, { email })
+    await this.db.updateUser({ id, emailConfirmationToken })
     const providerUser = userInfo && userInfo.user
     if (providerUser) {
       return this.db.insertProvider({
@@ -184,14 +162,13 @@ export default class Core {
 
   public async forgotPassword(email: string, client: IUserAgent) {
     email = this.normalizeEmail(email)
-    const emailConfirmationToken = await this.createToken()
     const user = await this.db.findUserByEmail(email)
-
     if (!user) {
       // do not wait
       this.email.sendPasswordResetHelpEmail(email, client)
       return
     }
+    const emailConfirmationToken = await this.createToken(TokenIntent.ForgotPassword, user)
 
     await this.db.updateUser({ id: user.id, emailConfirmationToken })
     // do not wait
@@ -199,11 +176,8 @@ export default class Core {
   }
 
   public async resetPassword(token: string, password: string, client: IUserAgent) {
-    const user = await this.db.findUserByEmailConfirmationToken(token)
-    if (!user) {
-      throw new CoreError('EMAIL_CONFIRMATION_TOKEN_NOT_FOUND')
-    }
-
+    const info = await this.findUserByEmailConfirmationToken(TokenIntent.ForgotPassword, token)
+    const { user } = info
     const hash = await passwords.hash(user.email!, password)
     await this.db.updateUser({
       id: user.id,
@@ -218,20 +192,19 @@ export default class Core {
     if (!user) {
       throw new CoreError('USER_NOT_FOUND')
     }
-
     const ok = await passwords.check(user.email!, oldPassword, user.password!)
     if (!ok) {
       throw new CoreError('INVALID_CREDENTIALS')
     }
     const hash = await passwords.hash(user.email!, newPassword)
-
     await this.db.updateUser({
       id: user.id,
       password: hash
     })
   }
 
-  public async changeEmail(id: string, password: string, newEmail: string) {
+  public async changeEmail(id: string, password: string, newEmail: string, client: IUserAgent) {
+    const email = this.normalizeEmail(newEmail)
     const user = await this.db.findUserById(id)
     if (!user) {
       throw new CoreError('USER_NOT_FOUND')
@@ -240,21 +213,37 @@ export default class Core {
     if (!ok) {
       throw new CoreError('INVALID_CREDENTIALS')
     }
-
-    throw new CoreError('NOT_IMPLEMENTED')
+    const hash = await passwords.hash(email, password)
+    const emailConfirmationToken = await this.createToken(TokenIntent.ConfirmEmail, user, {
+      email,
+      password: hash
+    })
+    await this.db.updateUser({ id: user.id, emailConfirmationToken })
+    // do not await here
+    this.email.sendChangeEmailEmail(user, email, emailConfirmationToken, client)
   }
 
   public async confirmEmail(token: string) {
-    const user = await this.db.findUserByEmailConfirmationToken(token)
-    if (!user) {
-      throw new CoreError('EMAIL_CONFIRMATION_TOKEN_NOT_FOUND')
+    const info = await this.findUserByEmailConfirmationToken(TokenIntent.ConfirmEmail, token)
+    const { user, data } = info
+    const { email, password } = data
+    if (!email) {
+      throw new CoreError('INVALID_TOKEN')
     }
-
-    await this.db.updateUser({
+    const update = {
       id: user.id,
+      email,
       emailConfirmed: true,
-      emailConfirmationToken: null
-    })
+      emailConfirmationToken: null,
+      password
+    }
+    if (!password) {
+      delete update.password
+    }
+    await this.db.updateUser(update)
+    return {
+      firstTime: !password
+    }
   }
 
   public async useRecoveryCode(userId: string, token: string) {
@@ -388,8 +377,11 @@ export default class Core {
     return email.toLowerCase()
   }
 
-  private createToken() {
-    return this.jwt.sign({ code: this.crypto.random() }, { expiresIn: '24h' })
+  private createToken(intent: TokenIntent, user: IUser, data: {} = {}) {
+    return this.jwt.sign(
+      { ...data, code: this.crypto.random(), id: user.id!, intent },
+      { expiresIn: '24h' }
+    )
   }
 
   private async createRecoveryCodes(user: IUser) {
@@ -397,5 +389,15 @@ export default class Core {
     const encrypted = await Promise.all(codes.map(code => this.crypto.encrypt(code)))
     await this.db.insertRecoveryCodes(user.id!, encrypted)
     return codes
+  }
+
+  private async findUserByEmailConfirmationToken(expectedIntent: TokenIntent, token: string) {
+    const data = await this.jwt.verify(token)
+    const { id, intent } = data
+    const user = await this.db.findUserById(id)
+    if (!user || !intent || intent !== expectedIntent) {
+      throw new CoreError('EMAIL_CONFIRMATION_TOKEN_NOT_FOUND')
+    }
+    return { user, data }
   }
 }

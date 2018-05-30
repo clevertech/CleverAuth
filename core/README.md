@@ -6,7 +6,6 @@ import {
   KnexAdapter,
   MongoAdapter,
   DefaultEmailService,
-  DefaultMediaService,
   Crypto,
   JWT,
   Validations,
@@ -17,11 +16,10 @@ const db = new MongoAdapter('<uri>')
 const db = new KnexAdapter({
   // knex config here
 })
-
-const sms = new TwilioSMSService({
-  accountSid: '',
-  authToken: '',
-  numberFrom: ''
+const sms = new TwilioSMSService(
+  '<accountSid>',
+  '<authToken>',
+  '<numberFrom>'
 })
 
 const core = new Core({
@@ -35,9 +33,6 @@ const core = new Core({
     emailServiceConfig: {
       // config for pnp-email-service
     }
-  }),
-  media: new DefaultMediaService({
-    // config for pnp-media-service
   }),
   crypto: new Crypto('<key>', '<algorithm> = aes-256-gcm'),
   jwt: new JWT('<algorithm>', '<secretOrPrivateKey>', '<secretOrPublicKey>', {

@@ -1,10 +1,10 @@
-import * as knex from 'knex'
-import * as uuid from 'uuid/v4'
-import { once, omit, clone } from 'lodash'
+import * as knex from 'knex';
+import { clone, omit, once } from 'lodash';
+import * as uuid from 'uuid/v4';
+import * as constants from '../constants';
+import { IProvider, IRecoveryCode, IUser, IUserUpdate } from '../types';
+import { IDatabaseAdapter } from './adapter';
 
-import { IUser, IProvider, IRecoveryCode, IUserUpdate } from '../types'
-import { IDatabaseAdapter } from './adapter'
-import * as constants from '../constants'
 
 const fieldNames = Object.keys(constants.availableFields)
 const last = (result: any) => (Array.isArray(result) ? result[result.length - 1] : result)
@@ -135,14 +135,6 @@ export default class KnexAdapter implements IDatabaseAdapter {
   async findUserByEmail(email: string): Promise<IUser | undefined> {
     return this.db('auth_users')
       .where({ email })
-      .then(last)
-  }
-
-  async findUserByEmailConfirmationToken(
-    emailConfirmationToken: string
-  ): Promise<IUser | undefined> {
-    return this.db('auth_users')
-      .where({ emailConfirmationToken })
       .then(last)
   }
 

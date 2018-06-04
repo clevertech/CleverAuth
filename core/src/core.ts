@@ -143,7 +143,10 @@ export default class Core {
     const user = validation.value
 
     const id = await this.db.insertUser(user)
-    const emailConfirmationToken = await this.createToken(TokenIntent.ConfirmEmail, user, { email })
+    const emailConfirmationToken = await this.createToken(TokenIntent.ConfirmEmail, user, {
+      id,
+      email
+    })
     await this.db.updateUser({ id, emailConfirmationToken })
     const providerUser = userInfo && userInfo.user
     if (providerUser) {
@@ -201,6 +204,8 @@ export default class Core {
       id: user.id,
       password: hash
     })
+    // TODO:
+    // this.email.sendChangePasswordEmail(user, client)
   }
 
   public async changeEmail(id: string, password: string, newEmail: string, client: IUserAgent) {
@@ -379,7 +384,7 @@ export default class Core {
 
   private createToken(intent: TokenIntent, user: IUser, data: {} = {}) {
     return this.jwt.sign(
-      { ...data, code: this.crypto.random(), id: user.id!, intent },
+      { id: user.id!, ...data, code: this.crypto.random(), intent },
       { expiresIn: '24h' }
     )
   }

@@ -1,12 +1,11 @@
-import * as knex from 'knex';
-import { clone, omit, once } from 'lodash';
-import * as uuid from 'uuid/v4';
-import * as constants from '../constants';
-import { IProvider, IRecoveryCode, IUser, IUserUpdate } from '../types';
-import { IDatabaseAdapter } from './adapter';
+import * as knex from 'knex'
+import { clone, omit, once } from 'lodash'
+import * as uuid from 'uuid/v4'
+import * as constants from '../constants'
+import { IProvider, IRecoveryCode, IUser, IUserUpdate } from '../types'
+import { IDatabaseAdapter } from './adapter'
 
-
-const fieldNames = Object.keys(constants.availableFields)
+const fieldNames = constants.availableFields.map(field => field.name)
 const last = (result: any) => (Array.isArray(result) ? result[result.length - 1] : result)
 
 export default class KnexAdapter implements IDatabaseAdapter {
@@ -46,7 +45,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
             .notNullable()
             .defaultTo(false)
           table
-            .string('emailConfirmationToken')
+            .text('emailConfirmationToken')
             .nullable()
             .unique()
           table.string('termsAndConditions').nullable()

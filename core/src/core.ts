@@ -57,6 +57,11 @@ export interface ISMSService {
   ) => void
 }
 
+export interface IPasswordService {
+  hash: (email: string, pass: string) => Promise<string>,
+  check: (email: string, pass: string, hash?: string) => Promise<boolean>
+}
+
 export interface ICoreConfig {
   projectName: string
   db: IDatabaseAdapter
@@ -65,7 +70,8 @@ export interface ICoreConfig {
   jwt: JWT
   validations: Validations
   sms: ISMSService
-  numberOfRecoverCodes?: number
+  numberOfRecoverCodes?: number,
+  passwords: IPasswordService
 }
 
 export interface IUserRegisterOptions {
@@ -93,6 +99,7 @@ export default class Core {
   private validations: Validations
   private sms: ISMSService
   private dumbArray: Array<string>
+  private passwords: IPasswordService
 
   constructor(config: ICoreConfig) {
     this.projectName = config.projectName
@@ -103,12 +110,13 @@ export default class Core {
     this.validations = config.validations
     this.sms = config.sms
     this.dumbArray = Array(config.numberOfRecoverCodes || 10).fill('')
+    this.passwords = config.passwords || { hash: passwords.hash, check: passwords.check }
   }
 
   public async login(email: string, password: string, client?: any): Promise<IUser | undefined> {
     email = this.normalizeEmail(email)
     const user = await this.db.findUserByEmail(email)
-    const ok = await passwords.check(email, password, user && user.password)
+    const ok = await this.checkPassword(email, password, user && user.password)
     if (!ok) {
       throw new CoreError('INVALID_CREDENTIALS')
     }
@@ -128,7 +136,7 @@ export default class Core {
       throw new CoreError('PASSWORD_REQUIRED')
     }
     if (params.password) {
-      const hash = await passwords.hash(params.email, params.password)
+      const hash = await this.hashPassword(params.email, params.password)
       params.password = hash
     }
 
@@ -181,7 +189,7 @@ export default class Core {
   public async resetPassword(token: string, password: string, client: IUserAgent) {
     const info = await this.findUserByEmailConfirmationToken(TokenIntent.ForgotPassword, token)
     const { user } = info
-    const hash = await passwords.hash(user.email!, password)
+    const hash = await this.hashPassword(user.email!, password)
     await this.db.updateUser({
       id: user.id,
       password: hash,
@@ -195,11 +203,11 @@ export default class Core {
     if (!user) {
       throw new CoreError('USER_NOT_FOUND')
     }
-    const ok = await passwords.check(user.email!, oldPassword, user.password!)
+    const ok = await this.checkPassword(user.email!, oldPassword, user.password!)
     if (!ok) {
       throw new CoreError('INVALID_CREDENTIALS')
     }
-    const hash = await passwords.hash(user.email!, newPassword)
+    const hash = await this.hashPassword(user.email!, newPassword)
     await this.db.updateUser({
       id: user.id,
       password: hash
@@ -214,11 +222,11 @@ export default class Core {
     if (!user) {
       throw new CoreError('USER_NOT_FOUND')
     }
-    const ok = await passwords.check(user.email!, password, user.password!)
+    const ok = await this.checkPassword(user.email!, password, user.password!)
     if (!ok) {
       throw new CoreError('INVALID_CREDENTIALS')
     }
-    const hash = await passwords.hash(email, password)
+    const hash = await this.hashPassword(email, password)
     const emailConfirmationToken = await this.createToken(TokenIntent.ConfirmEmail, user, {
       email,
       password: hash
@@ -359,7 +367,7 @@ export default class Core {
   public async disable2FA(id: string, password: string) {
     const user = await this.db.findUserById(id)
     if (!user) throw new CoreError('USER_NOT_FOUND')
-    const ok = await passwords.check(user.email, password, user.password)
+    const ok = await this.checkPassword(user.email, password, user.password)
     if (!ok) {
       throw new CoreError('INVALID_CREDENTIALS')
     }
@@ -376,6 +384,14 @@ export default class Core {
     if (!user) throw new CoreError('USER_NOT_FOUND')
     const { twofactor, twofactorPhone } = user
     return { twofactor, twofactorPhone }
+  }
+
+  public async hashPassword(email: string, password: string) {
+    return await this.passwords.hash(email, password)
+  }
+
+  public async checkPassword(email: string, pass: string, hash?: string) {
+    return await this.passwords.check(email, pass, hash)
   }
 
   private normalizeEmail(email: string) {

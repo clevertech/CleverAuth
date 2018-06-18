@@ -2,7 +2,7 @@ import { IPasswordService } from '../core'
 
 const scrypt = require('scrypt')
 
-export default class DefaultPasswordService implements IPasswordService {
+export default class DefaultPasswordsService implements IPasswordService {
   scryptParameters: any
 
   constructor(maxtime = 0.1) {

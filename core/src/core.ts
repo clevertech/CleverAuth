@@ -4,7 +4,7 @@ import { IDatabaseAdapter } from './database/adapter'
 import { IUser, IUserAgent } from './types'
 import Crypto from './utils/crypto'
 import JWT from './utils/jwt'
-import DefaultPasswordService from './utils/passwords'
+import DefaultPasswordsService from './utils/passwords'
 import Validations from './validations'
 
 enum TokenIntent {
@@ -111,7 +111,7 @@ export default class Core {
     this.validations = config.validations
     this.sms = config.sms
     this.dumbArray = Array(config.numberOfRecoverCodes || 10).fill('')
-    this.passwords = config.passwords || new DefaultPasswordService()
+    this.passwords = config.passwords || new DefaultPasswordsService()
   }
 
   public async login(email: string, password: string, client?: any): Promise<IUser | undefined> {

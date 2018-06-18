@@ -1,4 +1,6 @@
-import * as passwords from '../../src/utils/passwords'
+import DefaultPasswordsService from '../../src/utils/passwords'
+
+const passwords = new DefaultPasswordsService()
 
 describe('Passwords', () => {
   it('hash and check work as epexted', async () => {

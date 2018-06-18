@@ -1,7 +1,7 @@
-import * as crypto from 'crypto';
-import { IDatabaseAdapter } from '../src/database/adapter';
-import KnexAdapter from '../src/database/knex';
-import MongoAdapter from '../src/database/mongo';
+import * as crypto from 'crypto'
+import { IDatabaseAdapter } from '../src/database/adapter'
+import KnexAdapter from '../src/database/knex'
+import MongoAdapter from '../src/database/mongo'
 
 const mysql = new KnexAdapter({
   client: 'mysql',

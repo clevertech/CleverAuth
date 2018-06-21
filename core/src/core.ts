@@ -152,6 +152,7 @@ export default class Core {
     const user = validation.value
 
     const id = await this.db.insertUser(user)
+    user.id = id;
     const emailConfirmationToken = await this.createToken(TokenIntent.ConfirmEmail, user, {
       id,
       email

@@ -1,7 +1,7 @@
 import Core from './core'
+import { IDatabaseAdapter } from './database/adapter'
 import KnexAdapter from './database/knex'
 import MongoAdapter from './database/mongo'
-import IDatabaseAdapter from './database/adapter'
 import DefaultEmailService from './services/email'
 import TwilioSMSService from './services/sms/twilio'
 import Crypto from './utils/crypto'

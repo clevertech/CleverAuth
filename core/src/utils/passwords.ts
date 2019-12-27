@@ -1,24 +1,18 @@
 import { IPasswordService } from '../core'
 
-const scrypt = require('scrypt')
+const bcrypt = require('bcrypt')
 
 export default class DefaultPasswordsService implements IPasswordService {
-  scryptParameters: any
-
-  constructor(maxtime = 0.1) {
-    this.scryptParameters = scrypt.paramsSync(maxtime)
-  }
-
   public hash(email: string, pass: string): Promise<string> {
     pass = email + '#' + pass
-    return scrypt
-      .kdf(pass, this.scryptParameters)
-      .then((result: Buffer) => result.toString('base64'))
+    const saltRounds = 10
+    const hash = bcrypt.hashSync(pass, saltRounds)
+    return hash
   }
 
   public async check(email: string, pass: string, hash?: string | undefined): Promise<boolean> {
     pass = email + '#' + pass
-    return scrypt.verifyKdf(Buffer.from(hash || (await this.invalidHash()), 'base64'), pass)
+    return bcrypt.compareSync(pass, hash || (await this.invalidHash()))
   }
 
   /**

@@ -25,4 +25,20 @@ describe('Passwords', () => {
       expect(hash).toBeTruthy()
     })
   })
+
+  describe('Test hash pre-generated with the old scrypt library', () => {
+    const email = 'jens.mikkelsen@clevertech.biz';
+    const pass = '1234';
+    const oldHash = 'c2NyeXB0AA4AAAAIAAAAAeIvsdqRM0lgRDuV/T9zYvjKPjzbui8k+E0zFlbSmGur6dH0AeOF391KXtIksf6wEr24GCZMCD9+jNbGpjTNlVp+nXZHnxWpur1inMVyrDTr';
+
+    it('check validates the old hash', async () => {
+      const ok = await passwords.check(email, pass, oldHash);
+      expect(ok).toBeTruthy();
+    })
+
+    it('returns false if the hash is invalid', async () => {
+      const ok = await passwords.check(email, 'wrong password', oldHash);
+      expect(ok).toBeFalsy();
+    })
+  })
 })

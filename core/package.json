@@ -1,12 +1,13 @@
 {
   "name": "@clevertech.biz/auth-core",
-  "version": "0.1.5",
-  "description":
-    "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
+  "version": "1.0.0",
+  "description": "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
   "keywords": [],
   "main": "dist/library.js",
   "typings": "dist/types/library.d.ts",
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "author": "Clevertech (https://clevertech.biz)",
   "repository": {
     "type": "git",
@@ -15,7 +16,7 @@
   "license": "MIT",
   "engines": {
     "yarn": ">=1.0.2",
-    "node": ">=6"
+    "node": ">=10"
   },
   "scripts": {
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
@@ -35,8 +36,14 @@
   "lint-staged": {
     "gitDir": "../",
     "linters": {
-      "{src,test}/**/*.ts": ["prettier", "git add"],
-      "*.json": ["prettier", "git add"]
+      "{src,test}/**/*.ts": [
+        "prettier",
+        "git add"
+      ],
+      "*.json": [
+        "prettier",
+        "git add"
+      ]
     }
   },
   "config": {
@@ -45,8 +52,7 @@
     },
     "validate-commit-msg": {
       "types": "conventional-commit-types",
-      "helpMessage":
-        "Use \"npm run commit\" instead, we use conventional-changelog format :) (https://github.com/commitizen/cz-cli)"
+      "helpMessage": "Use \"npm run commit\" instead, we use conventional-changelog format :) (https://github.com/commitizen/cz-cli)"
     }
   },
   "jest": {
@@ -54,8 +60,18 @@
       "^.+\\.tsx?$": "ts-jest"
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"],
-    "coveragePathIgnorePatterns": ["/node_modules/", "/test/"],
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/",
+      "/test/"
+    ],
     "mapCoverage": true,
     "collectCoverage": true,
     "coverageThreshold": {
@@ -68,20 +84,20 @@
     }
   },
   "devDependencies": {
-    "@types/jest": "^22.0.1",
+    "@types/jest": "^23.0.0",
     "@types/node": "^8.0.0",
     "commitizen": "^2.9.6",
     "coveralls": "^2.13.1",
     "cz-conventional-changelog": "^2.0.0",
     "husky": "^0.14.0",
-    "jest": "^22.0.4",
+    "jest": "^23.0.0",
     "lint-staged": "^4.0.0",
     "mysql": "^2.15.0",
     "pg": "^7.4.0",
     "prettier": "^1.9.2",
     "rimraf": "^2.6.1",
     "semantic-release": "^8.0.0",
-    "ts-jest": "^22.0.0",
+    "ts-jest": "^23.0.0",
     "ts-node": "^3.0.6",
     "tslint": "^5.4.3",
     "tslint-config-prettier": "^1.1.0",
@@ -108,7 +124,7 @@
     "node-fetch": "^1.7.3",
     "pnp-email-service": "^0.1.8",
     "qrcode": "^0.9.0",
-    "scrypt": "^6.0.3",
+    "scrypt-kdf": "^2.0.1",
     "speakeasy": "^2.0.0",
     "uuid": "^3.1.0"
   }

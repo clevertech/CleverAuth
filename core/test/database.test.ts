@@ -35,11 +35,14 @@ const adapters: { [index: string]: IDatabaseAdapter } = {
 
 const randomId = crypto.randomBytes(16).toString('hex')
 
+const USER_UNDEFINED = 'User is not defined';
+
 describe('Database adapter', () => {
   Object.keys(adapters).forEach(adapterName => {
     const adapter = adapters[adapterName]
-    let userId
-    let emailConfirmationToken
+    let userId: string
+    let emailConfirmationToken: string
+
     it(`${adapterName} init()`, async () => {
       await adapter.init()
     })
@@ -61,18 +64,23 @@ describe('Database adapter', () => {
     it(`${adapterName} updateUser()`, async () => {
       await adapter.updateUser({ id: userId, emailConfirmed: true })
       const user = await adapter.findUserById(userId)
+      if(!user) throw Error(USER_UNDEFINED);
       expect(user.emailConfirmed).toEqual(true)
     })
 
     it(`${adapterName} findUserByEmail()`, async () => {
       const user = await adapter.findUserByEmail(`test+${randomId}@example.com`)
+      if(!user) throw Error(USER_UNDEFINED);
       expect(user.id).toEqual(userId)
       expect(user.email).toEqual(`test+${randomId}@example.com`)
-      emailConfirmationToken = user.emailConfirmationToken
+      if(user.emailConfirmationToken) {
+        emailConfirmationToken = user.emailConfirmationToken
+      }
     })
 
     it(`${adapterName} findUserById()`, async () => {
       const user = await adapter.findUserById(userId)
+      if(!user) throw Error(USER_UNDEFINED);
       expect(user.id).toEqual(userId)
       expect(user.email).toEqual(`test+${randomId}@example.com`)
       expect(user.emailConfirmationToken).toEqual(emailConfirmationToken)
@@ -80,6 +88,7 @@ describe('Database adapter', () => {
 
     it(`${adapterName} findUserByProviderLogin()`, async () => {
       const user = await adapter.findUserByProviderLogin(`login${randomId}`)
+      if(!user) throw Error(USER_UNDEFINED);
       expect(user.id).toEqual(userId)
       expect(user.email).toEqual(`test+${randomId}@example.com`)
       expect(user.emailConfirmationToken).toEqual(emailConfirmationToken)

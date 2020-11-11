@@ -186,7 +186,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
   }
 
   async insertUser(user: IUser): Promise<string> {
-    user = omit(user, ['id', '_id'])
+    user = omit(user, ['id', '_id']) as IUser
     const userId = uuid()
     user.id = userId
     return this.db('auth_users')

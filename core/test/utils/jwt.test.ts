@@ -10,9 +10,11 @@ describe('JWT', () => {
     expect(original.hello).toEqual(payload.hello)
   })
   it('sign rejects on invalid params', async () => {
-    expect(jwt1.sign(undefined)).rejects.toHaveProperty('message', 'payload is required')
+    const value: unknown = undefined;
+    expect(jwt1.sign(value as string)).rejects.toHaveProperty('message', 'payload is required')
   })
   it('verify rejects on invalid params', async () => {
-    expect(jwt1.verify(undefined)).rejects.toHaveProperty('message', 'jwt must be provided')
+    const value: unknown = undefined;
+    expect(jwt1.verify(value as string)).rejects.toHaveProperty('message', 'jwt must be provided')
   })
 })

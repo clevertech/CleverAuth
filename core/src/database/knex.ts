@@ -47,7 +47,8 @@ export default class KnexAdapter implements IDatabaseAdapter {
           table
             .text('emailConfirmationToken')
             .nullable()
-            .unique()
+            // Mysql does not support unique on blobs
+            //.unique()
           table.string('termsAndConditions').nullable()
           table.timestamps()
         })
@@ -186,7 +187,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
   }
 
   async insertUser(user: IUser): Promise<string> {
-    user = omit(user, ['id', '_id'])
+    user = omit(user, ['id', '_id']) as IUser
     const userId = uuid()
     user.id = userId
     return this.db('auth_users')

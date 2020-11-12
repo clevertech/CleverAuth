@@ -6,9 +6,9 @@ const encoding = 'hex'
 
 export default class Crypto {
   private key: string
-  private algorithm: string
+  private algorithm: crypto.CipherGCMTypes
 
-  constructor(key: string, algorithm: string = 'aes-256-gcm') {
+  constructor(key: string, algorithm: crypto.CipherGCMTypes = 'aes-256-gcm') {
     this.key = key
     this.algorithm = algorithm
   }

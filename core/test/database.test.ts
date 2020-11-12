@@ -38,6 +38,52 @@ const randomId = crypto.randomBytes(16).toString('hex')
 const USER_UNDEFINED = 'User is not defined';
 
 describe('Database adapter', () => {
+
+  describe('Mongo adapter specific', () => {
+    const adapter = adapters.mongo
+    const adapterName = 'mongo';
+
+    describe('Before init() calls', () => {
+      it(`${adapterName} insertUser() should fail`, async () => {
+        expect(
+          adapter.insertUser({
+            email: '',
+            emailConfirmationToken: ''
+          })
+        ).rejects.toThrow();
+      });
+      it(`${adapterName} insertProvider() should fail`, async () => {
+        expect(
+          adapter.insertProvider({
+            userId: '',
+            login: '',
+            data: { }
+          })
+        ).rejects.toThrow();
+      })
+      it(`${adapterName} updateUser() should fail`, async () => {
+        expect(
+          adapter.updateUser({ id: '', emailConfirmed: true })
+        ).rejects.toThrow();
+      })
+      it(`${adapterName} findUserByEmail() should fail`, async () => {
+        expect(
+          adapter.findUserByEmail('')
+        ).rejects.toThrow();
+      })
+      it(`${adapterName} findUserById() should fail`, async () => {
+        expect(
+          adapter.findUserById('')
+        ).rejects.toThrow();
+      })
+      it(`${adapterName} findUserByProviderLogin() should fail`, async () => {
+        expect(
+          adapter.findUserByProviderLogin('')
+        ).rejects.toThrow();
+      })
+    });
+  });
+
   Object.keys(adapters).forEach(adapterName => {
     const adapter = adapters[adapterName]
     let userId: string

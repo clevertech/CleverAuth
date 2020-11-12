@@ -1,4 +1,16 @@
+
 # CleverAuth Core
+
+Generic auth library for Clevertech.
+
+
+## Testing
+
+    docker-compose -f test/docker-compose.yml up -d
+    npm run test
+
+
+## Example
 
 ```javascript
 import {

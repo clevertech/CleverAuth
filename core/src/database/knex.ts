@@ -47,7 +47,8 @@ export default class KnexAdapter implements IDatabaseAdapter {
           table
             .text('emailConfirmationToken')
             .nullable()
-            .unique()
+            // Mysql does not support unique on blobs
+            //.unique()
           table.string('termsAndConditions').nullable()
           table.timestamps()
         })

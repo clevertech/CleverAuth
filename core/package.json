@@ -96,7 +96,7 @@
     "pg": "^8.6.0",
     "prettier": "^1.9.2",
     "rimraf": "^2.6.1",
-    "semantic-release": "^8.0.0",
+    "semantic-release": "^17.2.3",
     "ts-jest": "^25.1.0",
     "ts-node": "^8.9.1",
     "tslint": "^5.4.3",

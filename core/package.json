@@ -1,6 +1,6 @@
 {
   "name": "@clevertech.biz/auth-core",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
   "keywords": [],
   "main": "dist/library.js",
@@ -108,23 +108,23 @@
   },
   "dependencies": {
     "@types/joi": "^10.4.3",
-    "@types/jsonwebtoken": "^7.2.3",
+    "@types/jsonwebtoken": "^8.5.5",
     "@types/lodash": "^4.14.165",
     "@types/mongodb": "^2.2.11",
     "@types/node-fetch": "^1.6.7",
-    "@types/qrcode": "^0.8.0",
+    "@types/qrcode": "^1.4.1",
     "@types/speakeasy": "^2.0.1",
-    "@types/uuid": "^3.4.2",
+    "@types/uuid": "^8.3.1",
     "joi": "^11.1.1",
-    "jsonwebtoken": "^8.0.1",
+    "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.17",
     "lodash": "^4.17.20",
     "mongodb": "^2.2.31",
     "node-fetch": "^1.7.3",
     "pnp-email-service": "^0.1.8",
-    "qrcode": "^0.9.0",
+    "qrcode": "^1.4.4",
     "scrypt-kdf": "^2.0.1",
     "speakeasy": "^2.0.0",
-    "uuid": "^3.1.0"
+    "uuid": "^8.3.2"
   }
 }

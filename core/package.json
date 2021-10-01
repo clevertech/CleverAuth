@@ -112,7 +112,7 @@
     "@types/lodash": "^4.14.165",
     "@types/mongodb": "^2.2.11",
     "@types/node-fetch": "^1.6.7",
-    "@types/qrcode": "^0.8.0",
+    "@types/qrcode": "^1.4.1",
     "@types/speakeasy": "^2.0.1",
     "@types/uuid": "^8.3.1",
     "joi": "^11.1.1",
@@ -122,7 +122,7 @@
     "mongodb": "^2.2.31",
     "node-fetch": "^1.7.3",
     "pnp-email-service": "^0.1.8",
-    "qrcode": "^0.9.0",
+    "qrcode": "^1.4.4",
     "scrypt-kdf": "^2.0.1",
     "speakeasy": "^2.0.0",
     "uuid": "^8.3.2"

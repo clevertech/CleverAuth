@@ -108,7 +108,7 @@
   },
   "dependencies": {
     "@types/joi": "^10.4.3",
-    "@types/jsonwebtoken": "^7.2.3",
+    "@types/jsonwebtoken": "^8.5.5",
     "@types/lodash": "^4.14.165",
     "@types/mongodb": "^2.2.11",
     "@types/node-fetch": "^1.6.7",
@@ -116,7 +116,7 @@
     "@types/speakeasy": "^2.0.1",
     "@types/uuid": "^3.4.2",
     "joi": "^11.1.1",
-    "jsonwebtoken": "^8.0.1",
+    "jsonwebtoken": "^8.5.1",
     "knex": "^0.21.17",
     "lodash": "^4.17.20",
     "mongodb": "^2.2.31",

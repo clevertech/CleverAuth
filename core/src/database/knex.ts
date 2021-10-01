@@ -1,6 +1,6 @@
 import * as knex from 'knex'
 import { clone, omit, once } from 'lodash'
-import * as uuid from 'uuid/v4'
+import { v4 as uuid } from 'uuid';
 import * as constants from '../constants'
 import { IProvider, IRecoveryCode, IUser, IUserUpdate } from '../types'
 import { IDatabaseAdapter } from './adapter'

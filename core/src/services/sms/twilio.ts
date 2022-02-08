@@ -47,9 +47,8 @@ export default class TwilioSMSService implements ISMSService {
         )
       }
     } catch (err) {
-      const error = err as any;
       throw new Error(
-        `Twilio returned ${res.status}. ${error.message || String(error)}`
+        `Twilio returned ${res.status}. ${err.message || String(err)}`
       )
     }
   }

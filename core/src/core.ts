@@ -77,7 +77,7 @@ export interface ICoreConfig {
 
 export interface IUserRegisterOptions {
   email: string
-  image: string
+  image?: string
   password: string
   provider: string
 }
@@ -124,10 +124,9 @@ export default class Core {
     return user
   }
 
-  public async register(params: IUserRegisterOptions, client: IUserAgent) {
+  public async register(parameters: IUserRegisterOptions, client: IUserAgent) {
+    const { provider, ...params } = parameters;
     const email = this.normalizeEmail(params.email)
-    const { provider } = params
-    delete params.provider
     if (!params.image) delete params.image // removes empty strings
     const exists = await this.db.findUserByEmail(email)
     if (exists) {

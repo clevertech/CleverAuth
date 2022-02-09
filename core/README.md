@@ -6,7 +6,7 @@ Generic auth library for Clevertech.
 
 ## Testing
 
-You have to run the tests with node `v10` or `v12`. Node `v14` has a known issue with older `pg`
+You have to run the tests with node `v10` or newer
 clients.
 
     docker-compose -f test/docker-compose.yml up -d

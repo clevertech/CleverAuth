@@ -25,7 +25,7 @@ export default class JWT {
     const opts = Object.assign({}, this.defaultOptions, options)
     return new Promise((resolve, reject) => {
       jwt.sign(payload, this.secretOrPrivateKey, opts, (err, token) => {
-        err ? reject(err) : resolve(token)
+        err || !token? reject(err || new Error('Null token')) : resolve(token)
       })
     })
   }

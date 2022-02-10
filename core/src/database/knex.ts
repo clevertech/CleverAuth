@@ -1,4 +1,4 @@
-import * as knex from 'knex'
+import { Knex, knex } from 'knex'
 import { clone, omit, once } from 'lodash'
 import { v4 as uuid } from 'uuid';
 import * as constants from '../constants'
@@ -9,10 +9,10 @@ const fieldNames = constants.availableFields.map(field => field.name)
 const last = (result: any) => (Array.isArray(result) ? result[result.length - 1] : result)
 
 export default class KnexAdapter implements IDatabaseAdapter {
-  private db: knex
+  private db: Knex
   private serializeJSON: boolean
 
-  constructor(config: knex.Config) {
+  constructor(config: Knex.Config) {
     const cloned = clone(config)
     if (config.client === 'mysql') {
       ;(config.connection as any).typeCast = (field: any, next: any) => {
@@ -32,7 +32,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
     if (!authUsersExists) {
       await this.db.schema.createTableIfNotExists(
         'auth_users',
-        once((table: knex.TableBuilder) => {
+        once((table: Knex.TableBuilder) => {
           table.uuid('id').primary()
           table
             .string('email')
@@ -64,7 +64,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
     }
 
     if (missing.length > 0) {
-      await this.alterTable('auth_users', (table: knex.TableBuilder) => {
+      await this.alterTable('auth_users', (table: Knex.TableBuilder) => {
         missing.forEach(fieldName => table.string(fieldName))
       })
     }
@@ -74,7 +74,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
         ? Promise.resolve()
         : this.createTableIfNotExists(
             'auth_providers',
-            once((table: knex.TableBuilder) => {
+            once((table: Knex.TableBuilder) => {
               table.uuid('userId').notNullable()
               table
                 .foreign('userId')
@@ -95,7 +95,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
         ? Promise.resolve()
         : this.createTableIfNotExists(
             'auth_sessions',
-            once((table: knex.TableBuilder) => {
+            once((table: Knex.TableBuilder) => {
               table.uuid('userId').notNullable()
               table
                 .foreign('userId')
@@ -113,7 +113,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
         ? Promise.resolve()
         : this.createTableIfNotExists(
             'auth_recovery_codes',
-            once((table: knex.TableBuilder) => {
+            once((table: Knex.TableBuilder) => {
               table.uuid('userId').notNullable()
               table
                 .foreign('userId')
@@ -210,7 +210,7 @@ export default class KnexAdapter implements IDatabaseAdapter {
     return this.db('auth_providers').insert(provider)
   }
 
-  private createTableIfNotExists(tableName: string, callback: (table: knex.TableBuilder) => void) {
+  private createTableIfNotExists(tableName: string, callback: (table: Knex.TableBuilder) => void) {
     callback = once(callback)
     return this.db.schema.hasTable(tableName).then(tableExists => {
       return this.db.schema.createTableIfNotExists(
@@ -223,14 +223,14 @@ export default class KnexAdapter implements IDatabaseAdapter {
   private addColumn(
     table: string,
     columnName: string,
-    callback: (t: knex.AlterTableBuilder) => void
+    callback: (t: Knex.AlterTableBuilder) => void
   ) {
     return this.db.schema
       .hasColumn(table, columnName)
       .then(exists => !exists && this.alterTable(table, callback))
   }
 
-  private alterTable(table: string, callback: (t: knex.AlterTableBuilder) => void) {
+  private alterTable(table: string, callback: (t: Knex.AlterTableBuilder) => void) {
     return (this.db.schema as any).alterTable(table, once(callback))
   }
 }

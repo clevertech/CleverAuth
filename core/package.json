@@ -1,6 +1,6 @@
 {
   "name": "@clevertech.biz/auth-core",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "The set of utilities necessary to build an authentication service.  This does not include templates, views, styles, or transport layer.",
   "keywords": [],
   "main": "dist/library.js",
@@ -16,7 +16,7 @@
   "license": "MIT",
   "engines": {
     "yarn": ">=1.0.2",
-    "node": ">=10"
+    "node": ">=12"
   },
   "scripts": {
     "lint": "tslint -t codeFrame 'src/**/*.ts' 'test/**/*.ts'",
@@ -57,7 +57,7 @@
   },
   "devDependencies": {
     "@types/jest": "^26.0.0",
-    "@types/node": "^10.17.0",
+    "@types/node": "^12.20.0",
     "commitizen": "^2.9.6",
     "coveralls": "^2.13.1",
     "cz-conventional-changelog": "^2.0.0",
@@ -65,12 +65,12 @@
     "jest": "^26.6.0",
     "lint-staged": "^4.0.0",
     "mysql": "^2.15.0",
-    "pg": "^8.6.0",
+    "pg": "^8.7.3",
     "prettier": "^1.9.2",
     "rimraf": "^2.6.1",
     "semantic-release": "^8.0.0",
     "ts-jest": "^26.4.1",
-    "ts-node": "^8.9.1",
+    "ts-node": "^10.5.0",
     "tslint": "^5.4.3",
     "tslint-config-prettier": "^1.1.0",
     "tslint-config-standard": "^6.0.0",
@@ -89,7 +89,7 @@
     "@types/uuid": "^8.3.1",
     "joi": "^11.1.1",
     "jsonwebtoken": "^8.5.1",
-    "knex": "^0.21.17",
+    "knex": "^1.0.2",
     "lodash": "^4.17.20",
     "mongodb": "^2.2.31",
     "node-fetch": "^1.7.3",

@@ -92,7 +92,7 @@
     "knex": "^2.2.0",
     "lodash": "^4.17.20",
     "mongodb": "^2.2.31",
-    "node-fetch": "^1.7.3",
+    "node-fetch": "^2.6.7",
     "pnp-email-service": "^0.1.8",
     "qrcode": "^1.4.4",
     "scrypt-kdf": "^2.0.1",

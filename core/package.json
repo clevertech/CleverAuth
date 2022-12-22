@@ -88,7 +88,7 @@
     "@types/speakeasy": "^2.0.1",
     "@types/uuid": "^8.3.1",
     "joi": "^11.1.1",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "knex": "^2.2.0",
     "lodash": "^4.17.20",
     "mongodb": "^2.2.31",
